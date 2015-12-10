@@ -25,7 +25,9 @@ public class WearableReceiverService extends IntentService {
             float heartRate = buffer.getFloat();
             //float variableHr = buffer.getFloat();
 
-            Timber.d("Received HR is: %f (%f)", heartRate, 0);
+            Hermes.Bus.push(Application.BUS_HR, heartRate);
+
+            Timber.d("Received HR is: %f (%f)", heartRate, 0f);
         }
     }
 }

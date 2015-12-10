@@ -39,7 +39,7 @@ public class MainActivity extends WearableActivity implements SensorEventListene
         manager = (SensorManager) getSystemService(SENSOR_SERVICE);
         Sensor hrSensor = manager.getDefaultSensor(Sensor.TYPE_HEART_RATE);
 
-        manager.registerListener(this, hrSensor, SensorManager.SENSOR_DELAY_NORMAL);
+        //manager.registerListener(this, hrSensor, SensorManager.SENSOR_DELAY_NORMAL);
 
         mContainerView = (BoxInsetLayout) findViewById(R.id.container);
         mTextView = (TextView) findViewById(R.id.text);

@@ -1,6 +1,5 @@
 package io.github.prefanatic.dolus;
 
-import android.app.IntentService;
 import android.app.Service;
 import android.content.Intent;
 import android.hardware.Sensor;
@@ -15,6 +14,7 @@ import java.nio.ByteBuffer;
 import edu.uri.egr.hermes.Hermes;
 import edu.uri.egr.hermeswear.HermesWearable;
 import rx.Subscription;
+import timber.log.Timber;
 
 /**
  * Created by cody on 12/8/15.
@@ -29,22 +29,25 @@ public class DispatchHandoffService extends Service {
 
     @Override
     public void onDestroy() {
+        if (sensorSubscription != null && !sensorSubscription.isUnsubscribed())
+            sensorSubscription.unsubscribe();
+
         super.onDestroy();
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (intent != null && intent.hasCategory("message.event")) {
+        if (intent != null && intent.hasCategory(HermesWearable.SUBJECT_MESSAGE_RECEIVED)) {
             MessageEvent event = intent.getParcelableExtra(Hermes.EXTRA_OBJECT);
 
             if (event.getPath().equals("query-hr")) {
                 sensorSubscription = Hermes.Sensor.observeSensor(Sensor.TYPE_HEART_RATE, SensorManager.SENSOR_DELAY_NORMAL)
                         .subscribe(e -> {
                             ByteBuffer buffer = ByteBuffer.allocate(4).putFloat(e.values[0]);
-                            HermesWearable.Message.sendMessage(event.getSourceNodeId(), "hr-updated", buffer.array());
+                            HermesWearable.Message.sendMessage(event.getSourceNodeId(), "hr-updated", buffer.array())
+                                    .subscribe(res -> Timber.d("Sent HR value (%f) as a result: %d", e.values[0], res));
                         });
             } else if (event.getPath().equals("stop")) {
-                sensorSubscription.unsubscribe();
                 stopSelf();
             }
         }

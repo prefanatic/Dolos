@@ -14,10 +14,11 @@
         android:theme="@style/AppTheme">
         <service
             android:name=".WearableReceiverService"
-            android:exported="false">
+            android:enabled="true"
+            android:exported="true">
             <intent-filter>
                 <action android:name="hermes.intent.action.WEARABLE_DISPATCH"/>
-                <category android:name="message.event"/>
+                <category android:name="message.received"/>
             </intent-filter>
         </service>
         <activity android:name=".MainActivity">
