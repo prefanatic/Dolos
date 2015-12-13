@@ -18,7 +18,6 @@ public class BpmSearch {
     private static final String API_KEY = "IX2YB7HFFXVRELRNS";
     private static final EchoNestAPI echo = new EchoNestAPI(API_KEY);
     private static final float tempoRange = 0.1f;
-    private static final int BPM = 60;
 
     public static Observable<List<Artist>> searchForSong(String songName) {
         return Observable.create(new Observable.OnSubscribe<List<Artist>>() {
@@ -33,19 +32,23 @@ public class BpmSearch {
         });
     }
 
-    public static Observable<List<Song>> getTopSongsByTempo() {
+    public static Observable<List<Song>> getTopSongsByTempo(int bpm) {
         return Observable.create(new Observable.OnSubscribe<List<Song>>() {
             @Override
             public void call(Subscriber<? super List<Song>> subscriber) {
                 try {
                     SongParams params = new SongParams();
-                    params.setResults(100);
+                    params.setResults(50);
                     params.sortBy("song_hotttnesss", false);
+                    params.includeAudioSummary();
 
-                    params.setMaxTempo(BPM + (BPM * tempoRange));
-                    params.setMinTempo(BPM - (BPM * tempoRange));
+                    params.setMaxTempo(bpm + (bpm * tempoRange));
+                    params.setMinTempo(bpm - (bpm * tempoRange));
 
-                    subscriber.onNext(echo.searchSongs(params));
+                    List<Song> songs = echo.searchSongs(params);
+
+                    subscriber.onNext(songs);
+                    subscriber.onCompleted();
                 } catch (EchoNestException e) {
                     subscriber.onError(e);
                 }

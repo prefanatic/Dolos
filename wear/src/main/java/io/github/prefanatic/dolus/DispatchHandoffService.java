@@ -41,13 +41,19 @@ public class DispatchHandoffService extends Service {
             MessageEvent event = intent.getParcelableExtra(Hermes.EXTRA_OBJECT);
 
             if (event.getPath().equals("query-hr")) {
+                Intent activity = new Intent(this, MainActivity.class);
+                activity.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(activity);
+
                 sensorSubscription = Hermes.Sensor.observeSensor(Sensor.TYPE_HEART_RATE, SensorManager.SENSOR_DELAY_NORMAL)
                         .subscribe(e -> {
-                            ByteBuffer buffer = ByteBuffer.allocate(4).putFloat(e.values[0]);
+                            ByteBuffer buffer = ByteBuffer.allocate(4).putInt(Math.round(e.values[0]));
+                            Hermes.Bus.push(Application.BUS_HR, Math.round(e.values[0]));
                             HermesWearable.Message.sendMessage(event.getSourceNodeId(), "hr-updated", buffer.array())
                                     .subscribe(res -> Timber.d("Sent HR value (%f) as a result: %d", e.values[0], res));
                         });
             } else if (event.getPath().equals("stop")) {
+                Hermes.Bus.push(Application.BUS_STOP, true);
                 stopSelf();
             }
         }

@@ -10,9 +10,8 @@ import java.util.List;
 
 import rx.functions.Action1;
 import rx.functions.Func1;
-import rx.schedulers.Schedulers;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  * To work on unit tests, switch the Test Artifact in the Build Variants view.
@@ -42,22 +41,15 @@ public class ExampleUnitTest {
 
     @Test
     public void getGoodShit() {
-        BpmSearch.getTopSongsByTempo()
-                .flatMapIterable(new Func1<List<Song>, Iterable<Song>>() {
-                    @Override
-                    public Iterable<Song> call(List<Song> songs) {
-                        return songs;
-                    }
-                })
-                .subscribe(new Action1<Song>() {
-                    @Override
-                    public void call(Song song) {
-                        try {
-                            System.out.println(song.getReleaseName() + " has a tempo of " + song.getTempo() + " BPM");
-                        } catch (EchoNestException e) {
-                            System.out.println("WOW FUCK " + e.getMessage());
-                        }
-                    }
-                });
+        Song song = BpmSearch.getTopSongsByTempo(50)
+                .flatMapIterable(songs -> songs)
+                .toBlocking()
+                .first();
+
+        try {
+            System.out.println(song.getReleaseName() + " has a tempo of " + song.getTempo() + " BPM");
+        } catch (EchoNestException e) {
+            System.out.println("WOW FUCK " + e.getMessage());
+        }
     }
 }

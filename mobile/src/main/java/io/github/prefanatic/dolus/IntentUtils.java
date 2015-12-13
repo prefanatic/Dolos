@@ -4,6 +4,7 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.provider.MediaStore;
+import android.widget.Toast;
 
 /**
  * Created by cody on 11/30/15.
@@ -25,6 +26,8 @@ public class IntentUtils {
 
         if (intent.resolveActivity(context.getPackageManager()) != null) {
             context.startActivity(intent);
+        } else {
+            Toast.makeText(context, "Cannot find activity to resolve music search.", Toast.LENGTH_SHORT).show();
         }
     }
 }

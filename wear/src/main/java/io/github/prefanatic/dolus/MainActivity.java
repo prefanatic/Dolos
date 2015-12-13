@@ -1,29 +1,27 @@
 package io.github.prefanatic.dolus;
 
 import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.support.wearable.activity.WearableActivity;
 import android.support.wearable.view.BoxInsetLayout;
-import android.util.Log;
-import android.view.View;
-import android.widget.TextView;
 
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Locale;
 
-public class MainActivity extends WearableActivity implements SensorEventListener {
+import edu.uri.egr.hermes.Hermes;
+import rx.android.schedulers.AndroidSchedulers;
+
+public class MainActivity extends WearableActivity {
 
     private static final String TAG = "Dolus";
     private static final SimpleDateFormat AMBIENT_DATE_FORMAT =
             new SimpleDateFormat("HH:mm", Locale.US);
 
     private BoxInsetLayout mContainerView;
-    private TextView mTextView, mAccurateText, mVariable;
-    private TextView mClockView;
+   // private TextView mTextView, mAccurateText, mVariable;
+    //private TextView mClockView;
+    private HeartRateView heartRateView;
     private SensorManager manager;
 
     private int accuracy;
@@ -42,20 +40,30 @@ public class MainActivity extends WearableActivity implements SensorEventListene
         //manager.registerListener(this, hrSensor, SensorManager.SENSOR_DELAY_NORMAL);
 
         mContainerView = (BoxInsetLayout) findViewById(R.id.container);
-        mTextView = (TextView) findViewById(R.id.text);
-        mAccurateText = (TextView) findViewById(R.id.accuracy);
-        mClockView = (TextView) findViewById(R.id.clock);
-        mVariable = (TextView) findViewById(R.id.hrv);
+        heartRateView = (HeartRateView) findViewById(R.id.heart_rate);
+        //mTextView = (TextView) findViewById(R.id.text);
+        //mAccurateText = (TextView) findViewById(R.id.accuracy);
+        //mClockView = (TextView) findViewById(R.id.clock);
+        //mVariable = (TextView) findViewById(R.id.hrv);
 
         lastHeartRate = System.currentTimeMillis();
+
+        Hermes.Bus.observe(Application.BUS_HR, Integer.class)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(heartRateView::setRate);
+
+        Hermes.Bus.observe(Application.BUS_STOP, Boolean.class)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(b -> finish());
     }
 
     @Override
     protected void onDestroy() {
-        manager.unregisterListener(this);
+        //manager.unregisterListener(this);
         super.onDestroy();
     }
 
+    /*
     @Override
     public void onSensorChanged(final SensorEvent event) {
         Log.d(TAG, "onSensorChanged() called with: " + "event = [" + event + "]");
@@ -68,8 +76,8 @@ public class MainActivity extends WearableActivity implements SensorEventListene
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mTextView.setText(String.format("HR: %f", event.values[0]));
-                mVariable.setText(String.format("Variability: %d", hrV));
+                //mTextView.setText(String.format("HR: %f", event.values[0]));
+                //mVariable.setText(String.format("Variability: %d", hrV));
             }
         });
     }
@@ -91,10 +99,12 @@ public class MainActivity extends WearableActivity implements SensorEventListene
                         break;
                 }
 
-                mAccurateText.setText(msg);
+                //mAccurateText.setText(msg);
             }
         });
     }
+
+    */
 
     @Override
     public void onEnterAmbient(Bundle ambientDetails) {
@@ -117,14 +127,14 @@ public class MainActivity extends WearableActivity implements SensorEventListene
     private void updateDisplay() {
         if (isAmbient()) {
             mContainerView.setBackgroundColor(getResources().getColor(android.R.color.black));
-            mTextView.setTextColor(getResources().getColor(android.R.color.white));
-            mClockView.setVisibility(View.VISIBLE);
+            //mTextView.setTextColor(getResources().getColor(android.R.color.white));
+           // mClockView.setVisibility(View.VISIBLE);
 
-            mClockView.setText(AMBIENT_DATE_FORMAT.format(new Date()));
+            //mClockView.setText(AMBIENT_DATE_FORMAT.format(new Date()));
         } else {
             mContainerView.setBackground(null);
-            mTextView.setTextColor(getResources().getColor(android.R.color.black));
-            mClockView.setVisibility(View.GONE);
+            //mTextView.setTextColor(getResources().getColor(android.R.color.black));
+            //mClockView.setVisibility(View.GONE);
         }
     }
 }

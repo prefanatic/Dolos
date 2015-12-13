@@ -8,12 +8,21 @@ import com.google.android.gms.wearable.MessageEvent;
 import java.nio.ByteBuffer;
 
 import edu.uri.egr.hermes.Hermes;
-import timber.log.Timber;
+import edu.uri.egr.hermes.manipulators.FileLog;
 
 public class WearableReceiverService extends IntentService {
+    private FileLog log;
 
     public WearableReceiverService() {
         super("WearableReceiverService");
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+
+        log = new FileLog("heart_rate");
+        log.setHeaders("Time", "BPM");
     }
 
     @Override
@@ -22,12 +31,12 @@ public class WearableReceiverService extends IntentService {
             MessageEvent messageEvent = intent.getParcelableExtra(Hermes.EXTRA_OBJECT);
             ByteBuffer buffer = ByteBuffer.wrap(messageEvent.getData());
 
-            float heartRate = buffer.getFloat();
+            int heartRate = buffer.getInt();
             //float variableHr = buffer.getFloat();
 
-            Hermes.Bus.push(Application.BUS_HR, heartRate);
+            log.write(log.time(), heartRate);
 
-            Timber.d("Received HR is: %f (%f)", heartRate, 0f);
+            Hermes.Bus.push(Application.BUS_HR, heartRate);
         }
     }
 }
