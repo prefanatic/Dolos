@@ -29,6 +29,7 @@ public class DispatchHandoffService extends Service {
 
     @Override
     public void onDestroy() {
+        Hermes.Bus.push(Application.BUS_STOP, true);
         if (sensorSubscription != null && !sensorSubscription.isUnsubscribed())
             sensorSubscription.unsubscribe();
 
@@ -46,6 +47,8 @@ public class DispatchHandoffService extends Service {
                 startActivity(activity);
 
                 sensorSubscription = Hermes.Sensor.observeSensor(Sensor.TYPE_HEART_RATE, SensorManager.SENSOR_DELAY_NORMAL)
+                        .take(5)
+                        .doOnCompleted(this::stopSelf)
                         .subscribe(e -> {
                             ByteBuffer buffer = ByteBuffer.allocate(4).putInt(Math.round(e.values[0]));
                             Hermes.Bus.push(Application.BUS_HR, Math.round(e.values[0]));
@@ -53,7 +56,6 @@ public class DispatchHandoffService extends Service {
                                     .subscribe(res -> Timber.d("Sent HR value (%f) as a result: %d", e.values[0], res));
                         });
             } else if (event.getPath().equals("stop")) {
-                Hermes.Bus.push(Application.BUS_STOP, true);
                 stopSelf();
             }
         }
